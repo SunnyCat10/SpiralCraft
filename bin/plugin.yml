@@ -1,0 +1,10 @@
+main: me.Sunny.SpiralCraft.SpiralCraftPlugin
+name: SpiralCraft
+version: 1.0
+author: Sunny
+api-version: 1.13
+
+commands:
+   slash:
+   speed:
+   generate:
