@@ -13,7 +13,7 @@ public class Party {
 	private static final int MAX_MEMBERS = 4;
 	private static final String INFO_PREFIX = "'s party: ";
 	
-	private UUID partyID;
+	private final UUID partyID;
 	
 	private int levelStage;
 	private UUID levelID;
@@ -37,8 +37,8 @@ public class Party {
 	
 	public List<SpiralPlayer> getPartyMembers() { return partyMembers; }
 	public int getMemberSum() { return memberSum; } 
-	public UUID getID() { return partyID; } //TODO RENAAME TO PRATY IDD
-	
+	public UUID getID() { return partyID; } //TODO RENAME TO PARTY IDD
+
 	public UUID getLevelID() { return levelID; }
 	public int getLevelStage() { return levelStage; }
 	

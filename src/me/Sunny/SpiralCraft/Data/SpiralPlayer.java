@@ -24,7 +24,7 @@ public class SpiralPlayer {
 		
 		partyID = null;
 	}
-	
+
 	public Player getPlayer() { return player; }
 	public double getHealth() { return health; }
 	public UUID getPartyID() { return partyID; }
@@ -48,8 +48,4 @@ public class SpiralPlayer {
 			return ( player.getUniqueId().equals(other.getPlayer().getUniqueId()) );
 		}
 	}
-	
-
-
-	
 }
