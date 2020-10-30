@@ -1,10 +1,13 @@
 package me.Sunny.SpiralCraft.Utils;
 
+import me.Sunny.SpiralCraft.Levels.MinMaxBean;
+import me.Sunny.SpiralCraft.SpiralCraftPlugin;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
-import me.Sunny.SpiralCraft.Data.SpiralPlayer;
 import me.Sunny.SpiralGeneration.RoomNode;
 import me.Sunny.SpiralGeneration.Utils.Point;
 
@@ -16,36 +19,40 @@ import me.Sunny.SpiralGeneration.Utils.Point;
 public class ChunkGridUtils {
 
 	/**
-	 * The current room size used in game:
+	 * The current room size used in game.
 	 */
 	private static final int ROOM_SIZE = 16;
+
+	/**
+	 * The Y level of the level floor
+	 */
+	public static final int FLOOR_PLANE_HEIGHT = 33;
 	
 	/**
 	 * Private constructor
 	 */
 	private ChunkGridUtils() {}
-	
+
 	/**
 	 * Utility method to snap the rooms to the tile grid.
 	 * For example given the coordinates 100,0,100 the method will return the origin point that will align with the chunks.
-	 * @param spiralPlayer SpiralPlayer.
+	 * @param world world of the room.
 	 * @param coordinates The raw spawn coordinates.
 	 * @return Processed spawn coordinates aligned with the chunk grid system.
 	 */
-	public static Vector snapOrigin(SpiralPlayer spiralPlayer, Vector coordinates) {	
-		Chunk originChunk = spiralPlayer.getPlayer().getWorld().getBlockAt(
+	public static Vector snapOrigin(World world, Vector coordinates) {
+		Chunk originChunk = world.getBlockAt(
 				coordinates.getBlockX(), coordinates.getBlockY(), coordinates.getBlockZ()).getChunk();
 		Block cornerBlock = originChunk.getBlock(0, coordinates.getBlockY(), 0);
-		Vector originPoint = new Vector(cornerBlock.getLocation().getX(),
+		return new Vector(cornerBlock.getLocation().getX(),
 				cornerBlock.getLocation().getY(),
 				cornerBlock.getLocation().getZ());
-		return originPoint;
 	} 
 	
 	/**
 	 * Utility method that converts abstract coordinates from the generation algorithm,
 	 * and convert them into coordinates snapped to the minecraft chunk grid.
-	 * @param originPoint Origin point of the level.
+	 * @param floorOrigin Origin point of the level.
 	 * @param roomLocation Abstract coordinate representation based on the generation algorithm.
 	 * @return minecraft Coordinates snapped to the chunk grid.
 	 */
@@ -70,17 +77,13 @@ public class ChunkGridUtils {
 		switch(orientation) {
 		default:
 		case NORTH: // Transformation of 0 degrees:
-			return roomOrigin;
+			return new Vector(roomOrigin.getX(), roomOrigin.getY(), roomOrigin.getZ());
 		case EAST: // Transformation of 270 degrees:
-			roomOrigin.setX( roomOrigin.getX() + (ROOM_SIZE - 1) );
-			return roomOrigin;
+			return new Vector(roomOrigin.getX() + (ROOM_SIZE - 1), roomOrigin.getY(), roomOrigin.getZ());
 		case SOUTH: // Transformation of 180 degrees:
-			roomOrigin.setX( roomOrigin.getX() + (ROOM_SIZE - 1) );
-			roomOrigin.setZ( roomOrigin.getZ() + (ROOM_SIZE - 1) );
-			return roomOrigin;
+			return new Vector(roomOrigin.getX() + (ROOM_SIZE - 1), roomOrigin.getY(), roomOrigin.getZ() + (ROOM_SIZE - 1));
 		case WEST: // Transformation of 90 degrees:
-			roomOrigin.setZ( roomOrigin.getZ() + (ROOM_SIZE - 1) );
-			return roomOrigin;
+			return new Vector(roomOrigin.getX(), roomOrigin.getY(), roomOrigin.getZ() + (ROOM_SIZE - 1));
 		} 
 	}
 	
@@ -94,5 +97,33 @@ public class ChunkGridUtils {
 				(floorOrigin.getBlockX() + (ROOM_SIZE / 2)),
 				floorOrigin.getBlockY() + 1,
 				floorOrigin.getBlockZ() + (ROOM_SIZE / 2));
+	}
+
+	/**
+	 * Translates Minecraft coordinates vector to chunk coordinates point.
+	 * @param coordinates Minecraft coordinates of the chunk.
+	 * @return chunk coordinates point.
+	 */
+	public static Point getChunkLocation(Vector coordinates) {
+		World mainWorld = SpiralCraftPlugin.getMainWorld();
+		Chunk chunk = mainWorld.getChunkAt(new Location(
+				mainWorld,
+				coordinates.getBlockX(),
+				coordinates.getBlockY(),
+				coordinates.getBlockZ()));
+		return new Point(chunk.getX(), chunk.getZ());
+	}
+
+	/**
+	 * Retrieves the minimum and maximum points of a room.
+	 * @param roomOrigin Origin point of the room.
+	 * @param schematicHeight Height of the room`s schematic.
+	 * @return minimum and maximum points bean.
+	 */
+	public static MinMaxBean getRoomMinMax(Vector roomOrigin, int schematicHeight) {
+		MinMaxBean minMaxBean = new MinMaxBean();
+		minMaxBean.setMinPoint(new Vector(roomOrigin.getX(), FLOOR_PLANE_HEIGHT - 1, roomOrigin.getZ()));
+		minMaxBean.setMaxPoint(new Vector(roomOrigin.getX() + ROOM_SIZE - 1, schematicHeight, roomOrigin.getZ() + ROOM_SIZE - 1));
+		return minMaxBean;
 	}
 }

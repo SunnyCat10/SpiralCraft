@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import me.Sunny.SpiralCraft.Utils.ChunkGridUtils;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -21,12 +22,12 @@ public class LevelManager {
 	
 	private static final String NO_LEVELS_MSG = "No levels were found, generating level of a stage ";
 	private static final String NO_EMPTY_LEVELS_MSG = "No empty levels were found...";
-	private static final String SINGLE_LEVEL_MSG = "Single empty level was found, strating level on stage ";
+	private static final String SINGLE_LEVEL_MSG = "Single empty level was found, starting level on stage ";
 	private static final String MULTIPLE_LEVELS_MSG = "Serval empty levels were found, starting level on stage ";
 	private static final String END_MSG = "You have reached the end of the map!";
-	
+
 	private static final Vector SPAWN = new Vector(0, 50, 0);
-	private static final Vector TEST_ORIGIN = new Vector(-300, 33, 200);
+	private static final Vector TEST_ORIGIN = new Vector(-300, ChunkGridUtils.FLOOR_PLANE_HEIGHT, 200);
 	
 	// TODO: Not implemented yet -> offset for further Levels 
 	//private static final int X_OFFSET = 0;
@@ -36,7 +37,7 @@ public class LevelManager {
 	// The amount of regions in a sector.
 	private static final int REGIONS_PER_SECTOR = 1;
 	
-	private static List<List<Level>> levelMatrix = new ArrayList<>();
+	private static final List<List<Level>> levelMatrix = new ArrayList<>();
 	
 	/**
 	 * Prevents instantiation of the level manager.
@@ -81,7 +82,7 @@ public class LevelManager {
 		}
 		// Searches for empty levels that already were generated
 		if (levelMatrix.size() < stage) {
-			levelMatrix.add(new ArrayList<Level>());
+			levelMatrix.add(new ArrayList<>());
 			generateNewLevel(party, stage);
 			return;
 			}
@@ -158,5 +159,36 @@ public class LevelManager {
 		
 		levelMatrix.get(stage - 1).add(level);
 		level.start(party);
-	}	
+	}
+
+	/**
+	 * Removes a level by reference.
+	 * @param level Level reference.
+	 */
+	public static void removeLevel(Level level) {
+		level.remove();
+	}
+
+	/**
+	 * Removes a level by its stage and ID.
+	 * @param stage Stage of the level.
+	 * @param id ID of the level.
+	 */
+	public static void removeLevel(int stage, UUID id) {
+		Level level = getLevel(stage, id);
+		if (level != null)
+			level.remove();
+	}
+
+	/**
+	 * Removes all the levels that are loaded.
+	 * 		-Mostly used on server shutdown.
+	 */
+	public static void removeAll() {
+		for (List<Level> stageLevels : levelMatrix) {
+			for (Level level : stageLevels) {
+				removeLevel(level);
+			}
+		}
+	}
 }

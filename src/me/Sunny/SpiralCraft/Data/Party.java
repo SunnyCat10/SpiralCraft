@@ -46,7 +46,8 @@ public class Party {
 	public void setLevelStage(int levelStage) { this.levelStage = levelStage; }
 	
 	public boolean isFull() { return (memberSum == MAX_MEMBERS); } 
-	
+	public boolean isPlaying() { return (levelStage != 0); }
+
 	public void addMember(SpiralPlayer player) {
 		partyMembers.add(player);
 		memberSum += 1;

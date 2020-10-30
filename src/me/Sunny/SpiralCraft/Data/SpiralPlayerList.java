@@ -1,5 +1,6 @@
 package me.Sunny.SpiralCraft.Data;
 
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public final class SpiralPlayerList {
 	/**
 	 * Holds all the SpiralPlayers that are currently online.
 	 */
-	private static Hashtable<UUID, SpiralPlayer> spiralPlayerList = new Hashtable<UUID, SpiralPlayer>();
+	private static final Hashtable<UUID, SpiralPlayer> spiralPlayerList = new Hashtable<>();
 	
 	/**
 	 * Error message for when the player was not found in game.

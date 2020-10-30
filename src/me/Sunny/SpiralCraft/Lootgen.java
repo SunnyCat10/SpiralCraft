@@ -7,8 +7,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import me.Sunny.SpiralCraft.Loot.Tresure;
-import me.Sunny.SpiralCraft.Loot.Tresure.Rarity;
+import me.Sunny.SpiralCraft.Loot.Treasure;
+import me.Sunny.SpiralCraft.Loot.Treasure.Rarity;
 
 
 //TODO: ONLY PROTOTYPING CLASS!!!
@@ -39,9 +39,9 @@ public class Lootgen implements CommandExecutor {
 			common.setZ(common.getZ() - 2);
 			rare.setZ(common.getZ() + 2);
 			
-			Tresure ct = new Tresure(common, Rarity.COMMON);
-			Tresure ut = new Tresure(uncommon, Rarity.UNCOMMON);
-			Tresure rt = new Tresure(rare, Rarity.RARE);
+			Treasure ct = new Treasure(common, Rarity.COMMON);
+			Treasure ut = new Treasure(uncommon, Rarity.UNCOMMON);
+			Treasure rt = new Treasure(rare, Rarity.RARE);
 			
 			return true;
 		}

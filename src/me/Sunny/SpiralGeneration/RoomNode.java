@@ -1,25 +1,39 @@
 package me.Sunny.SpiralGeneration;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
+import me.Sunny.SpiralCraft.Triggers.Triggable;
 import me.Sunny.SpiralGeneration.Utils.Point;
 
 public class RoomNode extends AbstractNode
 {
 	private static final String MISSING_LINKS_NODE_ERROR = "ERROR: The current node is not linked to any other node.";
-	
-	public static enum Direction{
+
+	/**
+	 * Represents the four directions.
+	 */
+	public enum Direction{
 		NORTH,
 		EAST,
 		SOUTH,
 		WEST
 	}
 	
-	private Point location;
+	private final Point location; // The abstract location for the algorithm.
+	private Point chunkLocation; // The real location of the room in a chunk map.
 	private Direction orientation;
 	private Direction parentDirection;
 	private boolean isAlternative; // Distinguish between a node with two variants. (Two links node only: L 'variant' and I 'variant').
 
+	private Triggable spawnTrigger;
+
+	/**
+	 * Constructs a room node with location and ID.
+	 * @param location Abstract location of the node.
+	 * @param ID ID of the node.
+	 */
 	public RoomNode(Point location, String ID) {
 		setNorthNode(null);
 		setEastNode(null);
@@ -37,20 +51,29 @@ public class RoomNode extends AbstractNode
 	public RoomNode getSouthNode() { return (RoomNode)super.getThirdNode(); }
 	public RoomNode getWestNode() { return (RoomNode)super.getFourthNode(); }
 	public Point getLocation() { return location; }
+	public Point getChunkLocation() { return chunkLocation; }
 	public Direction getOrientation() { return orientation; }
 	public Direction getParentDirection() { return parentDirection; }
 	public boolean getIsAlternative() { return isAlternative; }
+	public Triggable getSpawnTrigger() { return spawnTrigger; }
 
 	public void setID(String ID) { super.setID(ID);}
 	public void setNorthNode(RoomNode node) { super.setFirstNode(node); }
 	public void setEastNode(RoomNode node) { super.setSecondtNode(node); }
 	public void setSouthNode(RoomNode node) { super.setThirdNode(node); }
 	public void setWestNode(RoomNode node) { super.setFourthNode(node); }
-	public void setLocation(Point location) { this.location = location; }
 	public void setOrientation() { updateOrientation(); } 
 	public void setOrientation(Direction orientation) { this.orientation = orientation; }
 	public void setParentDirection(Direction parentDirection) { this.parentDirection = parentDirection; }
-	
+	public void setSpawnTrigger(Triggable spawnTrigger) { this.spawnTrigger = spawnTrigger; }
+	public void setChunkLocation(Point chunkLocation) { this.chunkLocation = chunkLocation; }
+
+	//TODO: Change index to nodeDirection...
+	/**
+	 * Get a child node at a specific index.
+	 * @param index Index of the child node.
+	 * @return Child node.
+	 */
 	public RoomNode getNode(int index) {
 		switch (index) {
 		case 1:
@@ -64,7 +87,12 @@ public class RoomNode extends AbstractNode
 		}
 		return null;
 	}
-	
+
+	/**
+	 * Sets a child node for the parent node in a given direction.
+	 * @param nodeDirection Direction of the child node from the parent node.
+	 * @param roomNode Child node.
+	 */
 	public void setNode(Direction nodeDirection, RoomNode roomNode) {
 		switch (nodeDirection) {
 		case NORTH:
@@ -88,22 +116,12 @@ public class RoomNode extends AbstractNode
 	public boolean isLeaf() {
 		return ((super.getFirstNode() == null) && (super.getSecondNode() == null) &&
 				(super.getThirdNode() == null) && (super.getFourthNode() == null)); }
-	
-	@Override
-	public String toString() {
-		String northNode = (getNorthNode() == null) ? AbstractNode.NULL_SIGN : getNorthNode().getID();
-		String eastNode = (getEastNode() == null) ? AbstractNode.NULL_SIGN : getEastNode().getID();
-		String southNode = (getSouthNode() == null) ? AbstractNode.NULL_SIGN : getSouthNode().getID();
-		String westNode = (getWestNode() == null) ? AbstractNode.NULL_SIGN : getWestNode().getID();
-		String parentDir = (parentDirection == null) ? AbstractNode.NULL_SIGN : parentDirection.name();
-		String nodeOrientation = (orientation == null) ? AbstractNode.NULL_SIGN : orientation.name();
-			
-		return AbstractNode.NODE_PREFIX + this.getID() + AbstractNode.NODE_ADV_SPLIT + this.location.toString() +
-				AbstractNode.NODE_ADV_SPLIT + northNode + AbstractNode.NODE_SPLIT + eastNode + AbstractNode.NODE_SPLIT +
-				southNode + AbstractNode.NODE_SPLIT + westNode + AbstractNode.NODE_ADV_SPLIT + nodeOrientation +
-				AbstractNode.NODE_ADV_SPLIT + parentDir + AbstractNode.NODE_SUFFIX;
-		}
 
+	/**
+	 * Calculates the opposite direction of the given direction.
+ 	 * @param direction Given direction.
+	 * @return Opposite direction.
+	 */
 	public static Direction getOpposite(Direction direction) {
 		switch (direction) {
 		case NORTH:
@@ -130,7 +148,7 @@ public class RoomNode extends AbstractNode
 		if (getWestNode() != null) { ++childSum; }
 		return childSum;
 	}
-	
+
 	/**
 	 * Updates the default NORTH orientation of the node by checking both the amount of links (child sum) and their location.
 	 */
@@ -150,7 +168,7 @@ public class RoomNode extends AbstractNode
 			return;
 		case 3:
 			orientation = getThreeLinkDirection();
-			return;
+			break;
 		}
 	}
 	
@@ -159,7 +177,7 @@ public class RoomNode extends AbstractNode
 	 * @return Hash set of the node`s directions to other nodes.
 	 */
 	private HashSet<Direction> buildDirHashSet() {
-		HashSet<Direction> dirHashSet = new HashSet<Direction>();
+		HashSet<Direction> dirHashSet = new HashSet<>();
 		
 		if (getParentDirection() != null) { dirHashSet.add(parentDirection); }
 		if (getNorthNode() != null) { dirHashSet.add(Direction.NORTH); }
@@ -217,5 +235,20 @@ public class RoomNode extends AbstractNode
 
 		// Default return value.
 		return Direction.NORTH;
+	}
+
+	@Override
+	public String toString() {
+		String northNode = (getNorthNode() == null) ? AbstractNode.NULL_SIGN : getNorthNode().getID();
+		String eastNode = (getEastNode() == null) ? AbstractNode.NULL_SIGN : getEastNode().getID();
+		String southNode = (getSouthNode() == null) ? AbstractNode.NULL_SIGN : getSouthNode().getID();
+		String westNode = (getWestNode() == null) ? AbstractNode.NULL_SIGN : getWestNode().getID();
+		String parentDir = (parentDirection == null) ? AbstractNode.NULL_SIGN : parentDirection.name();
+		String nodeOrientation = (orientation == null) ? AbstractNode.NULL_SIGN : orientation.name();
+
+		return AbstractNode.NODE_PREFIX + this.getID() + AbstractNode.NODE_ADV_SPLIT + this.location.toString() +
+				AbstractNode.NODE_ADV_SPLIT + northNode + AbstractNode.NODE_SPLIT + eastNode + AbstractNode.NODE_SPLIT +
+				southNode + AbstractNode.NODE_SPLIT + westNode + AbstractNode.NODE_ADV_SPLIT + nodeOrientation +
+				AbstractNode.NODE_ADV_SPLIT + parentDir + AbstractNode.NODE_SUFFIX;
 	}
 }

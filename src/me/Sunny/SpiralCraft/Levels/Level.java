@@ -2,8 +2,12 @@ package me.Sunny.SpiralCraft.Levels;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import me.Sunny.SpiralCraft.Triggers.TriggerBean;
+import me.Sunny.SpiralGeneration.RoomNode;
 import org.bukkit.util.Vector;
 
 import com.sk89q.worldedit.WorldEditException;
@@ -15,13 +19,21 @@ import me.Sunny.SpiralCraft.Utils.ChunkGridUtils;
 
 public class Level {
 
+	// TODO: test path for the current layout
+	private static final String TEST_PATH = "C:/Users/Sunny/Dev/TestServer_1.16/plugins/SpiralCraft/layouts/test.txt";
+
 	private int stage;
-	private UUID ID;
+	private final UUID ID;
 	
 	private boolean isEmpty = true;
 	private Party party;
 	private Vector spawnPoint;
-	
+
+	private RoomNode root;
+	public List<TriggerBean> triggerList;
+
+	private final LevelGenerator levelGenerator;
+
 	// Level generation manager
 	// Monsters manager
 	// Chest manager
@@ -32,24 +44,25 @@ public class Level {
 	
 	public Level(Vector floorOrigin, SpiralPlayer spiralPlayer, int stage) {
 		ID = UUID.randomUUID();
-		generate(floorOrigin, spiralPlayer);
+		levelGenerator = new LevelGenerator(floorOrigin);
 		this.stage = stage;
+
+		generate();
 		setup();
 	}
-	
+
 	public UUID getID() { return ID; }
 	public boolean isEmpty() { return isEmpty; }	
 	public Vector getSpawnPoint() { return spawnPoint; }
+	public List<TriggerBean> getTriggerList() { return triggerList; }
 	
 	// Generating the level
-	private void generate(Vector floorOrigin, SpiralPlayer spiralPlayer) {
-		LevelGenerator levelGenerator = new LevelGenerator(floorOrigin);
-		
+	private void generate() {
 		System.out.print("Generating the level...");
 		
 		// TODO: put all this exception handling inside room generation!!!
 		try {
-			levelGenerator.generateFloor(spiralPlayer);
+			root = levelGenerator.generateFloor(TEST_PATH);
 		} catch (FileNotFoundException e) {
 			System.out.println("The node schematic was not found.");
 			e.printStackTrace();
@@ -60,7 +73,6 @@ public class Level {
 			System.out.println("World edit failed to print the schematic.");
 			e.printStackTrace();
 		}
-		
 		// Sets the spawn point of the level:
 		spawnPoint = ChunkGridUtils.getSpawnPoint(levelGenerator.getFloorOrigin());
 	}
@@ -68,6 +80,8 @@ public class Level {
 	// TODO: Clear the state of the level
 	public void setup() {
 		System.out.print("Setting up the level...");
+		triggerList = new ArrayList<>();
+		loadTriggers();
 	}
 	
 	/**
@@ -95,5 +109,43 @@ public class Level {
 		party = null;
 		setup();
 		isEmpty = true;
+	}
+
+	public void remove() {
+		System.out.println("Removing level \t" + stage + "\t" + ID);
+		levelGenerator.removeGeneration();
+		System.out.println("The level removed...");
+		// TODO: handle level removing from level generator to not create a memory leak.
+	}
+
+	// Triggers:
+
+	public void loadTriggers() {
+		TriggerBean triggerBean = new TriggerBean();
+		triggerBean.setTrigger(root.getSpawnTrigger());
+		triggerList.add(triggerBean);
+
+		for (int i = 1; i <= 4; i++) {
+			RoomNode childNode = root.getNode(i);
+			if (childNode != null) {
+				TriggerBean childTriggerBean = new TriggerBean();
+				childTriggerBean.setTrigger(childNode.getSpawnTrigger());
+				triggerList.add(childTriggerBean);
+				loadTriggers(childNode);
+			}
+		}
+	}
+
+	public void loadTriggers(RoomNode parentNode) {
+		for (int i = 1; i <= 4; i++) {
+			RoomNode childNode = parentNode.getNode(i);
+			if (childNode != null) {
+				TriggerBean childTriggerBean = new TriggerBean();
+				childTriggerBean.setTrigger(childNode.getSpawnTrigger());
+				triggerList.add(childTriggerBean);
+				if (!(childNode.isLeaf()))
+					loadTriggers(childNode);
+			}
+		}
 	}
 }
