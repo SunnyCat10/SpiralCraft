@@ -28,20 +28,17 @@ public class Lootgen implements CommandExecutor {
 			}
 			
 			Player player = (Player) sender;
-			Location playerLoc = player.getLocation();
-			
-			playerLoc.setX(playerLoc.getX() + 2);
-			
-			Location common = playerLoc.clone();
-			Location uncommon = playerLoc.clone();
-			Location rare = playerLoc.clone();
-			
-			common.setZ(common.getZ() - 2);
-			rare.setZ(common.getZ() + 2);
-			
-			Treasure ct = new Treasure(common, Rarity.COMMON);
-			Treasure ut = new Treasure(uncommon, Rarity.UNCOMMON);
-			Treasure rt = new Treasure(rare, Rarity.RARE);
+			int playerX = player.getLocation().getBlockX();
+			int playerY = player.getLocation().getBlockY();
+			int playerZ = player.getLocation().getBlockZ();
+
+			Location commonLoc = new Location(SpiralCraftPlugin.getMainWorld(), playerX + 3, playerY, playerZ);
+			Location uncommonLoc = new Location(SpiralCraftPlugin.getMainWorld(), playerX , playerY, playerZ);
+			Location rareLoc = new Location(SpiralCraftPlugin.getMainWorld(), playerX - 3, playerY, playerZ);
+
+			Treasure commonTreasure = new Treasure(commonLoc, Rarity.COMMON, plugin);
+			Treasure uncommonTreasure = new Treasure(uncommonLoc, Rarity.UNCOMMON, plugin);
+			Treasure rareTreasure = new Treasure(rareLoc, Rarity.RARE, plugin);
 			
 			return true;
 		}

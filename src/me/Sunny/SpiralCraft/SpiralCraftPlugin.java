@@ -1,5 +1,6 @@
 package me.Sunny.SpiralCraft;
 
+import me.Sunny.SpiralCraft.Events.ChestBreakEvent;
 import me.Sunny.SpiralCraft.Levels.LevelManager;
 import me.Sunny.SpiralCraft.Triggers.Detector;
 import org.bukkit.Bukkit;
@@ -40,8 +41,11 @@ public class SpiralCraftPlugin extends JavaPlugin {
 		PartyCommands pCommands = new PartyCommands();
 		this.getCommand("party").setExecutor(pCommands);
 		
-		LevelCommands lCommmands = new LevelCommands();
-		this.getCommand("level").setExecutor(lCommmands);
+		LevelCommands levelCommands = new LevelCommands();
+		this.getCommand("level").setExecutor(levelCommands);
+
+		ChestBreakEvent chestBreakEvent = new ChestBreakEvent();
+		getServer().getPluginManager().registerEvents(chestBreakEvent, this);
 	}
 	
 	@Override
