@@ -1,7 +1,6 @@
 package me.Sunny.SpiralCraft.Events;
 
 import me.Sunny.SpiralCraft.Loot.Treasure;
-import me.Sunny.SpiralCraft.SpiralCraftPlugin;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;

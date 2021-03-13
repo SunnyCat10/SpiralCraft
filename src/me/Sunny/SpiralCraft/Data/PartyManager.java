@@ -12,6 +12,7 @@ public final class PartyManager {
 	private static final String JOINED_PARTY_MSG = "You have successfully joined the party! ";
 	private static final String PARTY_IN_LOBBY_MSG = "The party is currently in spawn.";
 	private static final String PARTY_IN_LEVEL_MSG = "The party is currently in a level.";
+	private static final String FULL_PARTY = "The party is already full!";
 
 	/**
 	 * Holds all the Parties that are currently being used.
@@ -32,50 +33,60 @@ public final class PartyManager {
 	public static void removeParty(UUID partyID) {
 		partyList.remove(partyID);
 	}
-	
+
+	// TODO: Add special admin command to do it as well.
+	/**
+	 * Clear all the parties from the cache.
+	 *		-Currently used at server restart.
+	 */
 	public static void removeAll() {
 		partyList = new Hashtable<UUID, Party>();
 	}
 
 	
 	// Joins a random empty party
-	public static void joinParty(SpiralPlayer spiralPlayer) {
+	public static boolean joinParty(SpiralPlayer spiralPlayer) {
+		if (spiralPlayer.isInParty())
+			return false;
 		if (partyList.size() == 0) { // No parties found:
 			spiralPlayer.getPlayer().sendMessage("No parties have been found, creating a new one...");
 			addParty(spiralPlayer);
-			return;
+			return true;
 		}
 		for (Map.Entry<UUID, Party> entry : partyList.entrySet()) { // Searching for an empty party.
 			if (!(entry.getValue().isFull())) {
 				partyList.get(entry.getKey()).addMember(spiralPlayer);
 				spiralPlayer.getPlayer().sendMessage("Joining a party...");
-				return;
+				return true;
 			}
 		} // No empty parties were found:
 		spiralPlayer.getPlayer().sendMessage("No empty parties have been found, creating a new one...");
 		addParty(spiralPlayer);
+		return true;
 	}
 	
 	public static boolean joinParty(SpiralPlayer spiralPlayer, UUID partyID) {
+		if (spiralPlayer.isInParty())
+			return false;
 		Party party = partyList.get(partyID);
+		Player player = spiralPlayer.getPlayer();
 		if (party.isFull()) {
+			player.sendMessage(FULL_PARTY);
 			return false;
 		}
 		else {
 			party.addMember(spiralPlayer);
-			Player player = spiralPlayer.getPlayer();
 			player.sendMessage(JOINED_PARTY_MSG);
 			// The party is in lobby:
 			if (party.getLevelStage() == 0) { 
 				player.sendMessage(PARTY_IN_LOBBY_MSG);
-				return true;
 			}
 			else {
 				// Teleport the player to the party leader:
 				player.sendMessage(PARTY_IN_LEVEL_MSG);
 				player.teleport(party.getPartyMembers().get(0).getPlayer().getLocation());
-				return true;
 			}
+			return true;
 		}
 	}
 

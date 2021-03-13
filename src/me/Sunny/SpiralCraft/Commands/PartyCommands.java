@@ -33,6 +33,9 @@ public class PartyCommands implements CommandExecutor {
 	
 	private final static String PARTY_COMMANDS_INFO = PARTY_COMMANDS_HEADER + '\n' + PARTY_JOIN_INFO + '\n' +
 			PARTY_DESCRIPTION_INFO + '\n' + PARTY_LEAVE_INFO;
+
+	private final static String ERROR_JOINING = "You are already a member of another party. + '\n' +" +
+			"To join this party, first leave your current one.";
 	
 	public PartyCommands() {}
 	
@@ -51,7 +54,8 @@ public class PartyCommands implements CommandExecutor {
 				return true;
 			}
 			if (args[0].equalsIgnoreCase("join")) {
-				PartyManager.joinParty(spiralPlayer);
+				if (!(PartyManager.joinParty(spiralPlayer)))
+					player.sendMessage(ERROR_JOINING);
 				return true;
 			}
 			if (args[0].equalsIgnoreCase("info")) {
@@ -83,7 +87,7 @@ public class PartyCommands implements CommandExecutor {
 				List<SpiralPlayer> partyMembersList = PartyManager.getParty(spiralPlayer.getPartyID()).getPartyMembers();
 				for (SpiralPlayer partyMember : partyMembersList) {
 					if (invitedPlayerName.equals(partyMember.getPlayer().getDisplayName())) {
-						player.sendMessage("The player is already a member of the party.");
+						invitedPlayer.sendMessage("The player is already a member of the party.");
 						return true;
 					}
 				}
@@ -93,8 +97,8 @@ public class PartyCommands implements CommandExecutor {
 			
 			// Party invitation handling:
 			if (args[0].equalsIgnoreCase("accept")) {
-				if(args.length == 1 || args.length == 2)
-					return true; 
+				if(args.length == 1 || args.length == 2) {
+				}
 				else {
 					Player inviteSender = Bukkit.getPlayer(args[1]);
 					if (inviteSender == null) {
@@ -103,14 +107,14 @@ public class PartyCommands implements CommandExecutor {
 					}
 					inviteSender.sendMessage(player.getDisplayName() + " accepted your invitation.");
 					PartyManager.joinParty(spiralPlayer, UUID.fromString(args[2]));
-					return true; 
 				}
+				return true;
 			}
 			if (args[0].equalsIgnoreCase("reject")) {
-				if(args.length == 1) 
+				if(args.length == 1)  // TODO: Fix what ever happens here!!!
 					return true;
 				else {
-					Bukkit.getPlayer(args[1]).sendMessage(player.getDisplayName() + " rejected your invitation.");	
+					Bukkit.getPlayer(args[1]).sendMessage(player.getDisplayName() + " rejected your invitation.");
 					return true;
 				}
 			}
@@ -127,7 +131,7 @@ public class PartyCommands implements CommandExecutor {
 		if (spiralPlayer.isInParty()) {
 			PartyManager.getParty(spiralPlayer.getPartyID()).getInfo(); }
 		else {
-			player.sendMessage("You are currenty not inside a party"); }
+			player.sendMessage("You are currently not inside a party"); }
 	}
 	
 	/**
@@ -139,12 +143,12 @@ public class PartyCommands implements CommandExecutor {
 		if (spiralPlayer.isInParty()) {
 			PartyManager.exitParty(spiralPlayer); }
 		else {
-			player.sendMessage("You are currenty not inside a party"); }
+			player.sendMessage("You are currently not inside a party"); }
 	}
 	
-	private static void sendInvite(SpiralPlayer spiralSender, Player reciver) {
+	private static void sendInvite(SpiralPlayer spiralSender, Player receiver) {
 		Player sender = spiralSender.getPlayer();
-		sender.sendMessage("Party invitation for " + reciver.getDisplayName() + " was successfully sent.");
+		sender.sendMessage("Party invitation for " + receiver.getDisplayName() + " was successfully sent.");
 
 		TextComponent prefix = new TextComponent("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
 		prefix.setColor(ChatColor.of(Colors.BLACK_CORAL));
@@ -156,7 +160,7 @@ public class PartyCommands implements CommandExecutor {
 		header.setColor(ChatColor.of(Colors.BLACK_CORAL));		
 	
 		TextComponent acceptText = new TextComponent("ACCEPT"); 
-		acceptText.setHoverEvent(new HoverEvent( HoverEvent.Action.SHOW_TEXT, new Text("Click here to accept the inventation.")));
+		acceptText.setHoverEvent(new HoverEvent( HoverEvent.Action.SHOW_TEXT, new Text("Click here to accept the invitation.")));
 		acceptText.setClickEvent(new ClickEvent( ClickEvent.Action.RUN_COMMAND, "/party accept " + sender.getDisplayName() + " " + spiralSender.getPartyID()));
 		acceptText.setColor(ChatColor.of(Colors.GREEN_PANTONE));
 		
@@ -164,7 +168,7 @@ public class PartyCommands implements CommandExecutor {
 		split.setColor(ChatColor.of(Colors.BLACK_CORAL));
 		
 		TextComponent rejectText = new TextComponent("REJECT");
-		rejectText.setHoverEvent(new HoverEvent( HoverEvent.Action.SHOW_TEXT, new Text("Click here to reject the inventation.")));
+		rejectText.setHoverEvent(new HoverEvent( HoverEvent.Action.SHOW_TEXT, new Text("Click here to reject the invitation.")));
 		rejectText.setClickEvent(new ClickEvent( ClickEvent.Action.RUN_COMMAND, "/party reject " + sender.getDisplayName()));
 		rejectText.setColor(ChatColor.of(Colors.FIREBRICK));
 		
@@ -177,6 +181,6 @@ public class PartyCommands implements CommandExecutor {
 		prefix.addExtra(rejectText);
 		prefix.addExtra(suffix);
 		
-		reciver.spigot().sendMessage(prefix);	
+		receiver.spigot().sendMessage(prefix);
 	}
 }

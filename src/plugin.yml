@@ -11,3 +11,5 @@ commands:
    loot:
    party:
    level:
+
+depend: [ProtocolLib]
